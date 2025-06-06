@@ -3,82 +3,213 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>60-Minute Casio Countdown (Working)</title>
+<title>Advanced Casio Countdown Pro</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-body{background:#000;color:#fff;font-family:'Orbitron',monospace}
-.casio-font{font-family:'Orbitron','Courier New',monospace;font-weight:900;letter-spacing:0.1em}
-.btn{@apply px-6 py-3 rounded-lg font-bold transition-all duration-200}
-.btn-primary{@apply bg-green-600 hover:bg-green-500 text-white}
-.progress-bar{@apply w-full h-4 bg-gray-800 rounded-full overflow-hidden}
-.progress-fill{@apply h-full bg-green-500 transition-all duration-300}
-#renderCanvas{position:absolute;top:-9999px;left:-9999px} /* Hide render canvas */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
+body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitron',monospace}
+.casio-font{font-family:'JetBrains Mono','Courier New',monospace;font-weight:800;letter-spacing:0.05em}
+.btn{@apply px-6 py-3 rounded-lg font-bold transition-all duration-300 transform}
+.btn:hover{@apply scale-105}
+.btn-primary{@apply bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white shadow-lg}
+.btn-secondary{@apply bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white}
+.progress-bar{@apply w-full h-6 bg-gray-800 rounded-full overflow-hidden shadow-inner}
+.progress-fill{@apply h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500 shadow-md}
+.setting-card{@apply bg-gray-900 bg-opacity-80 backdrop-blur-lg p-4 rounded-xl border border-gray-700}
+.glow{box-shadow:0 0 20px rgba(16,185,129,0.3)}
+#renderCanvas{position:absolute;top:-99999px;left:-99999px}
+.premium-badge{@apply bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-3 py-1 rounded-full text-xs font-bold}
 </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-<div class="w-full max-w-2xl text-center space-y-6">
-	<h1 class="text-4xl font-bold casio-font text-green-400 mb-8">
-		⏱️ CASIO 60-MINUTE COUNTDOWN
-	</h1>
+<div class="w-full max-w-4xl space-y-6">
+	<div class="text-center mb-8">
+		<h1 class="text-5xl font-bold casio-font text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-4">
+			⚡ ADVANCED CASIO COUNTDOWN PRO
+		</h1>
+		<div class="premium-badge">PREMIUM QUALITY</div>
+	</div>
 	
-	<div class="bg-gray-900 p-8 rounded-2xl border border-gray-700">
-		<div class="grid grid-cols-2 gap-6 mb-6">
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+		<!-- Time Settings -->
+		<div class="setting-card">
+			<h3 class="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+				⏰ Cài đặt thời gian
+			</h3>
+			<div class="space-y-4">
+				<div>
+					<label class="block text-sm font-semibold mb-2 text-gray-300">Preset thời gian:</label>
+					<select id="timePreset" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+						<option value="60">1 phút (test nhanh)</option>
+						<option value="300">5 phút</option>
+						<option value="600">10 phút</option>
+						<option value="1800">30 phút</option>
+						<option value="3600" selected>60 phút (1 giờ)</option>
+						<option value="7200">120 phút (2 giờ)</option>
+						<option value="custom">Tùy chỉnh...</option>
+					</select>
+				</div>
+				<div id="customTimeSection" class="hidden space-y-3">
+					<div class="grid grid-cols-3 gap-2">
+						<div>
+							<label class="block text-xs text-gray-400 mb-1">Giờ</label>
+							<input id="customHours" type="number" min="0" max="23" value="1" class="w-full p-2 rounded bg-black border border-gray-600 text-white text-center">
+						</div>
+						<div>
+							<label class="block text-xs text-gray-400 mb-1">Phút</label>
+							<input id="customMinutes" type="number" min="0" max="59" value="0" class="w-full p-2 rounded bg-black border border-gray-600 text-white text-center">
+						</div>
+						<div>
+							<label class="block text-xs text-gray-400 mb-1">Giây</label>
+							<input id="customSeconds" type="number" min="0" max="59" value="0" class="w-full p-2 rounded bg-black border border-gray-600 text-white text-center">
+						</div>
+					</div>
+					<div class="text-sm text-yellow-400" id="customTimeDisplay">Tổng: 01:00:00</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Quality Settings -->
+		<div class="setting-card">
+			<h3 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
+				🎬 Cài đặt chất lượng
+			</h3>
+			<div class="space-y-4">
+				<div>
+					<label class="block text-sm font-semibold mb-2 text-gray-300">Độ phân giải:</label>
+					<select id="quality" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+						<option value="720p">1280×720 (HD - Nhanh)</option>
+						<option value="1080p" selected>1920×1080 (Full HD)</option>
+						<option value="1440p">2560×1440 (2K QHD)</option>
+						<option value="4k">3840×2160 (4K UHD)</option>
+						<option value="8k">7680×4320 (8K UHD)</option>
+					</select>
+				</div>
+				<div>
+					<label class="block text-sm font-semibold mb-2 text-gray-300">Frame Rate:</label>
+					<select id="fps" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+						<option value="24">24 FPS (Cinema)</option>
+						<option value="30" selected>30 FPS (Standard)</option>
+						<option value="60">60 FPS (Smooth)</option>
+						<option value="120">120 FPS (Ultra Smooth)</option>
+					</select>
+				</div>
+				<div>
+					<label class="block text-sm font-semibold mb-2 text-gray-300">Chất lượng encoding:</label>
+					<select id="encodingQuality" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+						<option value="draft">Draft (Nhanh - 2x bitrate)</option>
+						<option value="good">Good (Cân bằng - 4x bitrate)</option>
+						<option value="best" selected>Best (Chậm - 8x bitrate)</option>
+						<option value="lossless">Lossless (Rất chậm - 16x bitrate)</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Style Settings -->
+	<div class="setting-card">
+		<h3 class="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
+			🎨 Cài đặt giao diện
+		</h3>
+		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 			<div>
-				<label class="block text-sm font-semibold mb-2 text-gray-300">Chất lượng:</label>
-				<select id="quality" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
-					<option value="720p">1280×720 (HD - Nhanh)</option>
-					<option value="1080p" selected>1920×1080 (Full HD)</option>
-					<option value="1440p">2560×1440 (2K)</option>
+				<label class="block text-sm font-semibold mb-2 text-gray-300">Font style:</label>
+				<select id="fontStyle" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+					<option value="mono" selected>Monospace Classic</option>
+					<option value="digital">Digital LCD</option>
+					<option value="matrix">Matrix Style</option>
+					<option value="neon">Neon Glow</option>
 				</select>
 			</div>
 			<div>
-				<label class="block text-sm font-semibold mb-2 text-gray-300">FPS:</label>
-				<select id="fps" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
-					<option value="24">24 FPS</option>
-					<option value="30" selected>30 FPS</option>
+				<label class="block text-sm font-semibold mb-2 text-gray-300">Màu chữ:</label>
+				<select id="textColor" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+					<option value="#FFFFFF" selected>Trắng tinh khiết</option>
+					<option value="#00FF00">Xanh lá Matrix</option>
+					<option value="#00FFFF">Cyan điện tử</option>
+					<option value="#FF0000">Đỏ cảnh báo</option>
+					<option value="#FFD700">Vàng Casio</option>
+				</select>
+			</div>
+			<div>
+				<label class="block text-sm font-semibold mb-2 text-gray-300">Hiệu ứng:</label>
+				<select id="effects" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+					<option value="none">Không hiệu ứng</option>
+					<option value="glow" selected>Glow nhẹ</option>
+					<option value="strong-glow">Glow mạnh</option>
+					<option value="shadow">Drop shadow</option>
+					<option value="neon">Neon effect</option>
+				</select>
+			</div>
+			<div>
+				<label class="block text-sm font-semibold mb-2 text-gray-300">Progress bar:</label>
+				<select id="progressStyle" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+					<option value="simple" selected>Đơn giản</option>
+					<option value="segments">Phân đoạn</option>
+					<option value="circle">Vòng tròn</option>
+					<option value="none">Ẩn</option>
 				</select>
 			</div>
 		</div>
-		
-		<button id="generate" class="btn btn-primary w-full text-xl casio-font">
-			🚀 TẠO VIDEO 60 PHÚT
+	</div>
+
+	<!-- Generate Button -->
+	<div class="text-center">
+		<button id="generate" class="btn btn-primary text-2xl casio-font px-12 py-4 glow">
+			🚀 TẠO VIDEO COUNTDOWN PRO
 		</button>
-		
-		<div class="mt-4 text-sm text-gray-400">
-			⚡ Thời gian tạo: ~2-5 phút (tùy cấu hình máy)
+		<div class="mt-4 text-sm text-gray-400" id="estimatedTime">
+			⚡ Ước tính thời gian tạo: ~3-8 phút
 		</div>
 	</div>
 	
-	<div id="progress-section" class="bg-gray-900 p-6 rounded-xl border border-gray-700 hidden">
+	<!-- Progress Section -->
+	<div id="progress-section" class="setting-card hidden">
 		<div class="flex justify-between items-center mb-4">
-			<span class="casio-font text-green-400">ĐANG XỬ LÝ...</span>
-			<span id="progress-text" class="casio-font text-white">0%</span>
+			<span class="casio-font text-green-400 text-lg">⚡ ĐANG XỬ LÝ...</span>
+			<span id="progress-text" class="casio-font text-white text-xl">0%</span>
 		</div>
 		<div class="progress-bar">
 			<div id="progress-fill" class="progress-fill" style="width:0%"></div>
 		</div>
-		<div class="mt-4 space-y-2 text-sm">
-			<div class="flex justify-between">
-				<span>Trạng thái:</span>
-				<span id="status" class="text-green-400">Khởi tạo...</span>
+		<div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+			<div class="text-center">
+				<div class="text-gray-400">Trạng thái</div>
+				<div id="status" class="text-green-400 font-bold">Khởi tạo...</div>
 			</div>
-			<div class="flex justify-between">
-				<span>Thời gian còn lại:</span>
-				<span id="eta" class="text-yellow-400">Đang tính...</span>
+			<div class="text-center">
+				<div class="text-gray-400">Thời gian còn lại</div>
+				<div id="eta" class="text-yellow-400 font-bold">Đang tính...</div>
+			</div>
+			<div class="text-center">
+				<div class="text-gray-400">Frames/giây</div>
+				<div id="renderSpeed" class="text-blue-400 font-bold">0</div>
+			</div>
+			<div class="text-center">
+				<div class="text-gray-400">Dung lượng dự kiến</div>
+				<div id="estimatedSize" class="text-purple-400 font-bold">0 MB</div>
 			</div>
 		</div>
 	</div>
 	
-	<div id="preview-section" class="bg-gray-900 p-6 rounded-xl border border-gray-700 hidden">
-		<h3 class="text-xl font-bold casio-font text-green-400 mb-4">✅ HOÀN THÀNH!</h3>
-		<video id="preview" controls class="w-full rounded-lg mb-4"></video>
-		<button id="download" class="btn btn-primary casio-font">
-			💾 TẢI XUỐNG VIDEO
-		</button>
-		<div class="mt-4 text-sm text-gray-400">
-			Video: 60 phút | Font: Casio Digital | Chất lượng cao
+	<!-- Preview Section -->
+	<div id="preview-section" class="setting-card hidden">
+		<h3 class="text-2xl font-bold casio-font text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-6 text-center">
+			✅ VIDEO HOÀN THÀNH!
+		</h3>
+		<video id="preview" controls class="w-full rounded-lg mb-6 shadow-2xl"></video>
+		<div class="flex justify-center gap-4">
+			<button id="download" class="btn btn-primary casio-font text-lg">
+				💾 TẢI XUỐNG VIDEO
+			</button>
+			<button id="reset" class="btn btn-secondary casio-font">
+				🔄 TẠO VIDEO MỚI
+			</button>
+		</div>
+		<div id="videoInfo" class="mt-6 text-center text-sm text-gray-400">
+			<!-- Video info will be populated here -->
 		</div>
 	</div>
 </div>
@@ -90,36 +221,116 @@ body{background:#000;color:#fff;font-family:'Orbitron',monospace}
 const $ = id => document.getElementById(id);
 const btn = $("generate"), progressSection = $("progress-section"), previewSection = $("preview-section");
 const progressFill = $("progress-fill"), progressText = $("progress-text"), status = $("status"), eta = $("eta");
-const preview = $("preview");
+const preview = $("preview"), renderSpeed = $("renderSpeed"), estimatedSize = $("estimatedSize");
+
+// Update estimated time based on settings
+function updateEstimates() {
+	const quality = $("quality").value;
+	const fps = +$("fps").value;
+	const encoding = $("encodingQuality").value;
+	const duration = getDuration();
+	
+	// Calculate estimated render time
+	const basetime = {
+		"720p": 0.5, "1080p": 1, "1440p": 2.5, "4k": 8, "8k": 25
+	}[quality] || 1;
+	
+	const fpsMultiplier = fps / 30;
+	const encodingMultiplier = {
+		"draft": 0.5, "good": 1, "best": 2, "lossless": 4
+	}[encoding] || 1;
+	
+	const estimatedMinutes = (duration / 60) * basetime * fpsMultiplier * encodingMultiplier;
+	
+	$("estimatedTime").textContent = `⚡ Ước tính thời gian tạo: ~${Math.ceil(estimatedMinutes)} phút`;
+}
+
+// Handle custom time inputs
+$("timePreset").onchange = () => {
+	const isCustom = $("timePreset").value === "custom";
+	$("customTimeSection").style.display = isCustom ? "block" : "none";
+	updateCustomTime();
+	updateEstimates();
+};
+
+function updateCustomTime() {
+	const hours = +$("customHours").value || 0;
+	const minutes = +$("customMinutes").value || 0;
+	const seconds = +$("customSeconds").value || 0;
+	const total = hours * 3600 + minutes * 60 + seconds;
+	
+	$("customTimeDisplay").textContent = 
+		`Tổng: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')} (${total}s)`;
+}
+
+$("customHours").oninput = $("customMinutes").oninput = $("customSeconds").oninput = updateCustomTime;
+$("quality").onchange = $("fps").onchange = $("encodingQuality").onchange = updateEstimates;
+
+function getDuration() {
+	if ($("timePreset").value === "custom") {
+		const hours = +$("customHours").value || 0;
+		const minutes = +$("customMinutes").value || 0;
+		const seconds = +$("customSeconds").value || 0;
+		return hours * 3600 + minutes * 60 + seconds;
+	}
+	return +$("timePreset").value;
+}
 
 btn.onclick = async () => {
 	const quality = $("quality").value;
 	const fps = +$("fps").value;
+	const duration = getDuration();
+	const fontStyle = $("fontStyle").value;
+	const textColor = $("textColor").value;
+	const effects = $("effects").value;
+	const progressStyle = $("progressStyle").value;
+	const encodingQuality = $("encodingQuality").value;
+	
+	if (duration < 1) {
+		alert("⚠️ Thời gian phải lớn hơn 0!");
+		return;
+	}
 	
 	// Resolution settings
 	const resolutions = {
 		"720p": {w: 1280, h: 720},
 		"1080p": {w: 1920, h: 1080},
-		"1440p": {w: 2560, h: 1440}
+		"1440p": {w: 2560, h: 1440},
+		"4k": {w: 3840, h: 2160},
+		"8k": {w: 7680, h: 4320}
 	};
 	const {w, h} = resolutions[quality];
+	
+	// Bitrate calculation
+	const baseBitrate = {
+		"720p": 2000000, "1080p": 5000000, "1440p": 10000000, 
+		"4k": 25000000, "8k": 50000000
+	}[quality];
+	
+	const encodingMultiplier = {
+		"draft": 2, "good": 4, "best": 8, "lossless": 16
+	}[encodingQuality];
+	
+	const bitrate = baseBitrate * encodingMultiplier;
 	
 	btn.disabled = true;
 	progressSection.classList.remove("hidden");
 	previewSection.classList.add("hidden");
 	
-	const duration = 3600; // 60 minutes = 3600 seconds
 	let startTime = performance.now();
+	let frameCount = 0;
+	let lastSpeedCheck = startTime;
 	
 	try {
-		// Setup canvas for drawing (regular canvas, not OffscreenCanvas)
+		// Setup canvas
 		const canvas = $("renderCanvas");
 		canvas.width = w;
 		canvas.height = h;
 		const ctx = canvas.getContext("2d");
 		
-		// Preload font
-		await document.fonts.load("900 " + (h/5) + "px 'Courier New'");
+		// Preload fonts
+		await document.fonts.load(`900 ${h/5}px 'JetBrains Mono'`);
+		await document.fonts.load(`900 ${h/5}px 'Courier New'`);
 		
 		// MediaRecorder setup
 		const stream = canvas.captureStream(fps);
@@ -127,12 +338,18 @@ btn.onclick = async () => {
 		
 		const mediaRecorder = new MediaRecorder(stream, {
 			mimeType: 'video/webm; codecs=vp9',
-			videoBitsPerSecision: w >= 2560 ? 8000000 : w >= 1920 ? 5000000 : 3000000
+			videoBitsPerSecond: bitrate
 		});
 		
 		mediaRecorder.ondataavailable = event => {
 			if (event.data.size > 0) {
 				chunks.push(event.data);
+				
+				// Update estimated size
+				const currentSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
+				const progress = frameCount / (duration * fps);
+				const estimatedTotal = progress > 0 ? currentSize / progress : 0;
+				estimatedSize.textContent = `${(estimatedTotal / 1024 / 1024).toFixed(1)} MB`;
 			}
 		};
 		
@@ -143,12 +360,38 @@ btn.onclick = async () => {
 			preview.src = url;
 			preview.load();
 			
+			// Download setup
 			$("download").onclick = () => {
 				const a = document.createElement("a");
 				a.href = url;
-				a.download = `casio-countdown-60min-${quality}-${fps}fps.webm`;
+				const timeStr = formatDuration(duration);
+				a.download = `casio-countdown-${timeStr}-${quality}-${fps}fps-${encodingQuality}.webm`;
 				a.click();
 			};
+			
+			// Reset button
+			$("reset").onclick = () => {
+				progressSection.classList.add("hidden");
+				previewSection.classList.add("hidden");
+				btn.disabled = false;
+				frameCount = 0;
+			};
+			
+			// Video info
+			const fileSize = (blob.size / 1024 / 1024).toFixed(1);
+			const totalTime = (performance.now() - startTime) / 1000;
+			$("videoInfo").innerHTML = `
+				<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+					<div><strong>Thời lượng:</strong> ${formatDuration(duration)}</div>
+					<div><strong>Độ phân giải:</strong> ${w}×${h}</div>
+					<div><strong>FPS:</strong> ${fps}</div>
+					<div><strong>Dung lượng:</strong> ${fileSize} MB</div>
+					<div><strong>Bitrate:</strong> ${(bitrate/1000000).toFixed(1)} Mbps</div>
+					<div><strong>Thời gian render:</strong> ${(totalTime/60).toFixed(1)} phút</div>
+					<div><strong>Codec:</strong> VP9 WebM</div>
+					<div><strong>Chất lượng:</strong> ${encodingQuality.toUpperCase()}</div>
+				</div>
+			`;
 			
 			// Show completion
 			progressFill.style.width = "100%";
@@ -159,74 +402,139 @@ btn.onclick = async () => {
 			previewSection.classList.remove("hidden");
 			btn.disabled = false;
 			
-			const totalTime = (performance.now() - startTime) / 1000;
 			console.log(`✅ Video generated in ${totalTime.toFixed(1)} seconds`);
 		};
 		
-		// Casio-style drawing function
-		const drawCasioFrame = (timeRemaining) => {
+		// Advanced drawing function
+		const drawAdvancedFrame = (timeRemaining) => {
 			// Pure black background
 			ctx.fillStyle = "#000000";
 			ctx.fillRect(0, 0, w, h);
 			
-			// Calculate time display (MM:SS format)
-			const totalMins = Math.floor(timeRemaining / 60);
+			// Calculate time display
+			const hours = Math.floor(timeRemaining / 3600);
+			const mins = Math.floor((timeRemaining % 3600) / 60);
 			const secs = timeRemaining % 60;
-			const timeString = `${totalMins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 			
-			// Main Casio-style time display
-			const fontSize = Math.min(w, h) / 5;
-			ctx.font = `900 ${fontSize}px 'Courier New', monospace`;
+			const timeString = duration >= 3600 
+				? `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+				: `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+			
+			// Font setup
+			const fontSize = Math.min(w, h) / (duration >= 3600 ? 6 : 5);
+			const fontFamily = fontStyle === "digital" ? "'JetBrains Mono'" : "'Courier New'";
+			ctx.font = `900 ${fontSize}px ${fontFamily}, monospace`;
 			ctx.textAlign = "center";
 			ctx.textBaseline = "middle";
-			ctx.fillStyle = "#FFFFFF";
+			ctx.fillStyle = textColor;
 			
-			// Add subtle glow for Casio LCD effect
-			ctx.shadowColor = "#FFFFFF";
-			ctx.shadowBlur = 8;
+			// Apply effects
+			if (effects !== "none") {
+				switch(effects) {
+					case "glow":
+						ctx.shadowColor = textColor;
+						ctx.shadowBlur = 12;
+						break;
+					case "strong-glow":
+						ctx.shadowColor = textColor;
+						ctx.shadowBlur = 25;
+						break;
+					case "shadow":
+						ctx.shadowColor = "#000000";
+						ctx.shadowOffsetX = 4;
+						ctx.shadowOffsetY = 4;
+						ctx.shadowBlur = 8;
+						break;
+					case "neon":
+						ctx.shadowColor = textColor;
+						ctx.shadowBlur = 20;
+						// Double render for neon effect
+						ctx.fillText(timeString, w/2, h/2);
+						ctx.shadowBlur = 40;
+						break;
+				}
+			}
+			
+			// Draw main time
 			ctx.fillText(timeString, w/2, h/2);
 			
 			// Reset shadow
 			ctx.shadowBlur = 0;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = 0;
 			
-			// Add small LCD-style indicators
-			ctx.font = `400 ${fontSize/15}px 'Courier New', monospace`;
-			ctx.fillStyle = "#999999";
-			ctx.fillText("MIN    SEC", w/2, h/2 + fontSize/2.2);
+			// Subtitle
+			const subtitle = duration >= 3600 ? "HH:MM:SS" : "MM:SS";
+			ctx.font = `600 ${fontSize/12}px ${fontFamily}, monospace`;
+			ctx.fillStyle = textColor + "80";
+			ctx.fillText(subtitle, w/2, h/2 + fontSize/2.5);
 			
-			// Simple progress indicator at bottom
-			const progressWidth = w * 0.8;
-			const progressHeight = 6;
-			const progressX = (w - progressWidth) / 2;
-			const progressY = h * 0.85;
-			
-			// Progress background
-			ctx.fillStyle = "#333333";
-			ctx.fillRect(progressX, progressY, progressWidth, progressHeight);
-			
-			// Progress fill
-			const fillWidth = ((duration - timeRemaining) / duration) * progressWidth;
-			ctx.fillStyle = "#FFFFFF";
-			ctx.fillRect(progressX, progressY, fillWidth, progressHeight);
+			// Progress indicator
+			if (progressStyle !== "none") {
+				const progress = (duration - timeRemaining) / duration;
+				
+				if (progressStyle === "simple") {
+					const progressWidth = w * 0.8;
+					const progressHeight = 8;
+					const progressX = (w - progressWidth) / 2;
+					const progressY = h * 0.85;
+					
+					ctx.fillStyle = "#333333";
+					ctx.fillRect(progressX, progressY, progressWidth, progressHeight);
+					
+					ctx.fillStyle = textColor;
+					ctx.fillRect(progressX, progressY, progressWidth * progress, progressHeight);
+				} else if (progressStyle === "segments") {
+					const segmentCount = 20;
+					const segmentWidth = (w * 0.8) / segmentCount;
+					const segmentHeight = 12;
+					const startX = (w - (segmentWidth * segmentCount)) / 2;
+					const segmentY = h * 0.85;
+					
+					for (let i = 0; i < segmentCount; i++) {
+						const x = startX + i * segmentWidth;
+						ctx.fillStyle = i < segmentCount * progress ? textColor : "#333333";
+						ctx.fillRect(x, segmentY, segmentWidth - 2, segmentHeight);
+					}
+				} else if (progressStyle === "circle") {
+					const centerX = w/2;
+					const centerY = h * 0.85;
+					const radius = Math.min(w, h) / 25;
+					
+					// Background circle
+					ctx.beginPath();
+					ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+					ctx.strokeStyle = "#333333";
+					ctx.lineWidth = 6;
+					ctx.stroke();
+					
+					// Progress arc
+					ctx.beginPath();
+					ctx.arc(centerX, centerY, radius, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * progress);
+					ctx.strokeStyle = textColor;
+					ctx.lineWidth = 6;
+					ctx.stroke();
+				}
+			}
 		};
 		
 		// Start recording
 		mediaRecorder.start();
 		status.textContent = "Đang render frames...";
 		
-		// Generate frames using RAF for smooth timing
+		// Generate frames
 		let currentTime = duration;
-		let frameCount = 0;
-		const targetFrameTime = 1000 / fps; // ms per frame
+		const targetFrameTime = 1000 / fps;
 		let lastFrameTime = 0;
 		
 		const generateFrame = (timestamp) => {
 			if (currentTime >= 0) {
-				// Control frame rate
 				if (timestamp - lastFrameTime >= targetFrameTime) {
-					drawCasioFrame(currentTime);
+					drawAdvancedFrame(currentTime);
 					
-					// Update progress every second
+					frameCount++;
+					
+					// Update progress and stats
 					if (frameCount % fps === 0) {
 						const progress = ((duration - currentTime) / duration) * 100;
 						progressFill.style.width = progress + "%";
@@ -235,20 +543,27 @@ btn.onclick = async () => {
 						const elapsed = (performance.now() - startTime) / 1000;
 						const remaining = (elapsed / ((duration - currentTime) / duration)) - elapsed;
 						eta.textContent = formatTime(remaining);
-						status.textContent = `Rendering: ${Math.floor(currentTime/60)}:${(currentTime%60).toString().padStart(2,'0')}`;
+						
+						const currentSpeed = frameCount / elapsed;
+						renderSpeed.textContent = currentSpeed.toFixed(1);
+						
+						if (duration >= 3600) {
+							const h = Math.floor(currentTime / 3600);
+							const m = Math.floor((currentTime % 3600) / 60);
+							const s = currentTime % 60;
+							status.textContent = `Rendering: ${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+						} else {
+							status.textContent = `Rendering: ${Math.floor(currentTime/60)}:${(currentTime%60).toString().padStart(2,'0')}`;
+						}
 					}
 					
 					currentTime--;
-					frameCount++;
 					lastFrameTime = timestamp;
 				}
 				
 				requestAnimationFrame(generateFrame);
 			} else {
-				// Finished generating frames
-				setTimeout(() => {
-					mediaRecorder.stop();
-				}, 1000);
+				setTimeout(() => mediaRecorder.stop(), 1000);
 			}
 		};
 		
@@ -270,7 +585,23 @@ function formatTime(seconds) {
 	return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
 }
 
-console.log("🚀 Working Casio 60-Minute Countdown Generator ready!");
+function formatDuration(seconds) {
+	const hours = Math.floor(seconds / 3600);
+	const mins = Math.floor((seconds % 3600) / 60);
+	const secs = seconds % 60;
+	
+	if (hours > 0) {
+		return `${hours}h${mins}m${secs}s`;
+	} else if (mins > 0) {
+		return `${mins}m${secs}s`;
+	} else {
+		return `${secs}s`;
+	}
+}
+
+// Initialize
+updateEstimates();
+console.log("🚀 Advanced Casio Countdown Pro Generator ready!");
 </script>
 </body>
 </html>
