@@ -1,0 +1,365 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1 Hour Countdown - Auto Start</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #111827;
+            color: #f9fafb;
+            overflow: hidden;
+        }
+        
+        .font-mono { font-family: 'Courier New', monospace; }
+        .font-digital { font-family: 'Courier New', 'Lucida Console', monospace; letter-spacing: 0.1em; }
+        .font-bold-sans { font-family: 'Arial Black', Arial, sans-serif; font-weight: 900; }
+        .font-condensed { font-family: 'Arial Narrow', Arial, sans-serif; font-stretch: condensed; }
+        .font-rounded { font-family: 'Verdana', Geneva, sans-serif; }
+        .font-clock { 
+            font-family: 'Impact', 'Franklin Gothic Bold', Arial, sans-serif; 
+            font-weight: 900; 
+            letter-spacing: 0.05em;
+            font-stretch: condensed;
+        }
+        .font-seven-segment {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00ff00, #00aa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        
+        /* Massive display for video */
+        .text-video {
+            font-size: 15rem; /* 240px */
+            line-height: 0.9;
+        }
+        
+        @media (max-width: 1200px) {
+            .text-video {
+                font-size: 12rem; /* 192px */
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .text-video {
+                font-size: 8rem; /* 128px */
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .text-video {
+                font-size: 5rem; /* 80px */
+            }
+        }
+        
+        /* Fullscreen styles */
+        .fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        }
+        
+        /* Subtle background animation */
+        @keyframes pulse-bg {
+            0%, 100% { background-color: rgba(17, 24, 39, 1); }
+            50% { background-color: rgba(31, 41, 55, 1); }
+        }
+        
+        .animate-pulse-bg {
+            animation: pulse-bg 4s ease-in-out infinite;
+        }
+        
+        /* Blink animation */
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            transition: width 1s ease;
+        }
+        
+        /* Settings panel */
+        .settings-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(31, 41, 55, 0.9);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 8px;
+            padding: 16px;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .settings-panel:hover {
+            opacity: 1;
+        }
+        
+        /* Instruction overlay */
+        .instruction-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .instruction-card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="animate-pulse-bg">
+    <!-- Instruction Overlay -->
+    <div class="instruction-overlay" id="instruction-overlay">
+        <div class="instruction-card">
+            <h2 class="text-2xl font-bold text-white mb-4">🎬 Video Countdown Ready</h2>
+            <div class="text-gray-300 mb-6 space-y-2">
+                <p>📹 <strong>Cách quay video:</strong></p>
+                <p>1. Nhấn <kbd class="bg-gray-700 px-2 py-1 rounded">F11</kbd> để fullscreen</p>
+                <p>2. Bắt đầu screen recording</p>
+                <p>3. Countdown sẽ tự động chạy</p>
+                <p>4. Nhấn <kbd class="bg-gray-700 px-2 py-1 rounded">Esc</kbd> để thoát fullscreen</p>
+            </div>
+            <div class="text-sm text-gray-400 mb-6">
+                <p>⚡ <strong>Phím tắt:</strong></p>
+                <p><kbd class="bg-gray-700 px-1 py-0.5 rounded text-xs">1-7</kbd> Đổi font • <kbd class="bg-gray-700 px-1 py-0.5 rounded text-xs">R</kbd> Reset • <kbd class="bg-gray-700 px-1 py-0.5 rounded text-xs">T</kbd> Test 5 phút</p>
+            </div>
+            <button onclick="startCountdown()" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                🚀 Bắt đầu Countdown
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Panel (hover to show) -->
+    <div class="settings-panel">
+        <div class="text-xs text-gray-300 space-y-2">
+            <div><strong>Phím tắt:</strong></div>
+            <div>1-7: Đổi font</div>
+            <div>R: Reset</div>
+            <div>T: Test 5 phút</div>
+            <div>F11: Fullscreen</div>
+        </div>
+    </div>
+
+    <!-- Main Display -->
+    <div class="fullscreen-container">
+        <!-- Title -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white opacity-80" id="title">
+                1 Hour Countdown
+            </h1>
+        </div>
+        
+        <!-- Countdown Display -->
+        <div class="text-center">
+            <div class="text-video font-bold text-white font-clock mb-4" id="display">
+                60:00
+            </div>
+            <div class="text-lg text-gray-400 opacity-70" id="time-label">
+                Minutes : Seconds
+            </div>
+        </div>
+        
+        <!-- Status -->
+        <div class="text-center mt-12">
+            <div class="text-xl text-gray-300" id="status">
+                Ready to start...
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progress-bar" style="width: 100%"></div>
+
+    <script>
+        let totalSeconds = 3600; // 1 tiếng = 3600 giây
+        let remainingSeconds = totalSeconds;
+        let timerInterval = null;
+        let isRunning = false;
+        let currentFont = 'font-clock';
+        let isTestMode = false;
+        
+        const fonts = [
+            'font-mono',
+            'font-digital', 
+            'font-bold-sans',
+            'font-condensed',
+            'font-rounded',
+            'font-clock',
+            'font-seven-segment'
+        ];
+        
+        function updateDisplay() {
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            
+            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('display').textContent = display;
+            
+            // Update progress bar
+            const progress = ((totalSeconds - remainingSeconds) / totalSeconds) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            
+            // Change colors based on time remaining
+            const displayElement = document.getElementById('display');
+            if (remainingSeconds <= 60) {
+                displayElement.className = `text-video font-bold text-red-400 ${currentFont} mb-4`;
+                document.getElementById('status').textContent = '🔥 Final minute!';
+            } else if (remainingSeconds <= 300) {
+                displayElement.className = `text-video font-bold text-yellow-400 ${currentFont} mb-4`;
+                document.getElementById('status').textContent = '⚠️ Last 5 minutes...';
+            } else {
+                displayElement.className = `text-video font-bold text-white ${currentFont} mb-4`;
+                document.getElementById('status').textContent = isRunning ? '⏱️ Timer running...' : 'Ready to start...';
+            }
+        }
+        
+        function startCountdown() {
+            if (isRunning) return;
+            
+            // Hide instruction overlay
+            document.getElementById('instruction-overlay').style.display = 'none';
+            
+            isRunning = true;
+            document.getElementById('status').textContent = '⏱️ Timer running...';
+            
+            timerInterval = setInterval(function() {
+                remainingSeconds--;
+                updateDisplay();
+                
+                if (remainingSeconds <= 0) {
+                    // Time's up
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    document.getElementById('display').textContent = '00:00';
+                    document.getElementById('display').classList.add('blink');
+                    document.getElementById('status').textContent = '🎉 Time\'s up!';
+                    
+                    // Notification
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        new Notification('Countdown Finished!', {
+                            body: isTestMode ? '5-minute test completed!' : '1 hour countdown completed!',
+                            icon: '/favicon.ico'
+                        });
+                    }
+                }
+            }, 1000);
+        }
+        
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            remainingSeconds = totalSeconds;
+            document.getElementById('display').classList.remove('blink');
+            updateDisplay();
+            document.getElementById('status').textContent = 'Timer reset. Ready to start...';
+        }
+        
+        function setTestMode() {
+            if (isRunning) return;
+            
+            isTestMode = true;
+            totalSeconds = 300; // 5 phút
+            remainingSeconds = totalSeconds;
+            document.getElementById('title').textContent = '5 Minutes Test';
+            document.getElementById('display').textContent = '05:00';
+            document.getElementById('status').textContent = 'Test mode: 5 minutes';
+            updateDisplay();
+        }
+        
+        function changeFont(fontIndex) {
+            if (fontIndex >= 0 && fontIndex < fonts.length) {
+                currentFont = fonts[fontIndex];
+                updateDisplay();
+            }
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                    changeFont(parseInt(e.key) - 1);
+                    break;
+                case 'r':
+                case 'R':
+                    resetTimer();
+                    break;
+                case 't':
+                case 'T':
+                    setTestMode();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    if (!isRunning) {
+                        startCountdown();
+                    }
+                    break;
+            }
+        });
+        
+        // Auto-request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        
+        // Initialize display
+        updateDisplay();
+        
+        // Fullscreen helpers
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F11') {
+                e.preventDefault();
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
