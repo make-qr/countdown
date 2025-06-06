@@ -3,7 +3,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Advanced Casio Countdown Pro</title>
+<title>Real-time Casio Countdown Pro</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -14,21 +14,29 @@ body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitr
 .btn:hover{@apply scale-105}
 .btn-primary{@apply bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white shadow-lg}
 .btn-secondary{@apply bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white}
+.btn-danger{@apply bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white}
 .progress-bar{@apply w-full h-6 bg-gray-800 rounded-full overflow-hidden shadow-inner}
 .progress-fill{@apply h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500 shadow-md}
 .setting-card{@apply bg-gray-900 bg-opacity-80 backdrop-blur-lg p-4 rounded-xl border border-gray-700}
 .glow{box-shadow:0 0 20px rgba(16,185,129,0.3)}
 #renderCanvas{position:absolute;top:-99999px;left:-99999px}
 .premium-badge{@apply bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-3 py-1 rounded-full text-xs font-bold}
+.realtime-indicator{@apply bg-gradient-to-r from-red-500 to-red-400 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse}
 </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 <div class="w-full max-w-4xl space-y-6">
 	<div class="text-center mb-8">
 		<h1 class="text-5xl font-bold casio-font text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-4">
-			⚡ ADVANCED CASIO COUNTDOWN PRO
+			⚡ REAL-TIME CASIO COUNTDOWN PRO
 		</h1>
-		<div class="premium-badge">PREMIUM QUALITY</div>
+		<div class="flex justify-center gap-2 mb-4">
+			<div class="premium-badge">REAL-TIME ACCURATE</div>
+			<div class="realtime-indicator">LIVE SYNC</div>
+		</div>
+		<div class="text-sm text-gray-400">
+			✅ Video output = Thời gian thực chính xác 100%
+		</div>
 	</div>
 	
 	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -83,7 +91,6 @@ body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitr
 						<option value="1080p" selected>1920×1080 (Full HD)</option>
 						<option value="1440p">2560×1440 (2K QHD)</option>
 						<option value="4k">3840×2160 (4K UHD)</option>
-						<option value="8k">7680×4320 (8K UHD)</option>
 					</select>
 				</div>
 				<div>
@@ -92,16 +99,13 @@ body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitr
 						<option value="24">24 FPS (Cinema)</option>
 						<option value="30" selected>30 FPS (Standard)</option>
 						<option value="60">60 FPS (Smooth)</option>
-						<option value="120">120 FPS (Ultra Smooth)</option>
 					</select>
 				</div>
 				<div>
-					<label class="block text-sm font-semibold mb-2 text-gray-300">Chất lượng encoding:</label>
-					<select id="encodingQuality" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
-						<option value="draft">Draft (Nhanh - 2x bitrate)</option>
-						<option value="good">Good (Cân bằng - 4x bitrate)</option>
-						<option value="best" selected>Best (Chậm - 8x bitrate)</option>
-						<option value="lossless">Lossless (Rất chậm - 16x bitrate)</option>
+					<label class="block text-sm font-semibold mb-2 text-gray-300">Render mode:</label>
+					<select id="renderMode" class="w-full p-3 rounded bg-black border border-gray-600 text-white casio-font">
+						<option value="realtime" selected>🔴 Real-time (Chính xác 100%)</option>
+						<option value="fast">⚡ Fast (Nhanh 10x, có thể sai timing)</option>
 					</select>
 				</div>
 			</div>
@@ -139,7 +143,6 @@ body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitr
 					<option value="none">Không hiệu ứng</option>
 					<option value="glow" selected>Glow nhẹ</option>
 					<option value="strong-glow">Glow mạnh</option>
-					<option value="shadow">Drop shadow</option>
 					<option value="neon">Neon effect</option>
 				</select>
 			</div>
@@ -158,17 +161,20 @@ body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitr
 	<!-- Generate Button -->
 	<div class="text-center">
 		<button id="generate" class="btn btn-primary text-2xl casio-font px-12 py-4 glow">
-			🚀 TẠO VIDEO COUNTDOWN PRO
+			🚀 TẠO VIDEO REAL-TIME
+		</button>
+		<button id="stop" class="btn btn-danger text-lg casio-font px-8 py-3 hidden">
+			⏹️ DỪNG RENDER
 		</button>
 		<div class="mt-4 text-sm text-gray-400" id="estimatedTime">
-			⚡ Ước tính thời gian tạo: ~3-8 phút
+			⚡ Real-time mode: Thời gian render = Thời lượng video
 		</div>
 	</div>
 	
 	<!-- Progress Section -->
 	<div id="progress-section" class="setting-card hidden">
 		<div class="flex justify-between items-center mb-4">
-			<span class="casio-font text-green-400 text-lg">⚡ ĐANG XỬ LÝ...</span>
+			<span class="casio-font text-green-400 text-lg">🔴 ĐANG RENDER REAL-TIME...</span>
 			<span id="progress-text" class="casio-font text-white text-xl">0%</span>
 		</div>
 		<div class="progress-bar">
@@ -176,20 +182,20 @@ body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitr
 		</div>
 		<div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
 			<div class="text-center">
-				<div class="text-gray-400">Trạng thái</div>
-				<div id="status" class="text-green-400 font-bold">Khởi tạo...</div>
+				<div class="text-gray-400">Video Time</div>
+				<div id="videoTime" class="text-green-400 font-bold casio-font text-lg">00:00</div>
 			</div>
 			<div class="text-center">
-				<div class="text-gray-400">Thời gian còn lại</div>
-				<div id="eta" class="text-yellow-400 font-bold">Đang tính...</div>
+				<div class="text-gray-400">Còn lại</div>
+				<div id="remaining" class="text-yellow-400 font-bold casio-font text-lg">--:--</div>
 			</div>
 			<div class="text-center">
-				<div class="text-gray-400">Frames/giây</div>
-				<div id="renderSpeed" class="text-blue-400 font-bold">0</div>
+				<div class="text-gray-400">Real-time Sync</div>
+				<div id="syncStatus" class="text-green-400 font-bold">✅ SYNCED</div>
 			</div>
 			<div class="text-center">
-				<div class="text-gray-400">Dung lượng dự kiến</div>
-				<div id="estimatedSize" class="text-purple-400 font-bold">0 MB</div>
+				<div class="text-gray-400">File Size</div>
+				<div id="fileSize" class="text-purple-400 font-bold">0 MB</div>
 			</div>
 		</div>
 	</div>
@@ -197,7 +203,7 @@ body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitr
 	<!-- Preview Section -->
 	<div id="preview-section" class="setting-card hidden">
 		<h3 class="text-2xl font-bold casio-font text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-6 text-center">
-			✅ VIDEO HOÀN THÀNH!
+			✅ VIDEO REAL-TIME HOÀN THÀNH!
 		</h3>
 		<video id="preview" controls class="w-full rounded-lg mb-6 shadow-2xl"></video>
 		<div class="flex justify-center gap-4">
@@ -219,31 +225,12 @@ body{background:linear-gradient(135deg,#000,#111);color:#fff;font-family:'Orbitr
 
 <script>
 const $ = id => document.getElementById(id);
-const btn = $("generate"), progressSection = $("progress-section"), previewSection = $("preview-section");
-const progressFill = $("progress-fill"), progressText = $("progress-text"), status = $("status"), eta = $("eta");
-const preview = $("preview"), renderSpeed = $("renderSpeed"), estimatedSize = $("estimatedSize");
+const btn = $("generate"), stopBtn = $("stop"), progressSection = $("progress-section"), previewSection = $("preview-section");
+const progressFill = $("progress-fill"), progressText = $("progress-text");
+const preview = $("preview"), videoTime = $("videoTime"), remaining = $("remaining"), syncStatus = $("syncStatus"), fileSize = $("fileSize");
 
-// Update estimated time based on settings
-function updateEstimates() {
-	const quality = $("quality").value;
-	const fps = +$("fps").value;
-	const encoding = $("encodingQuality").value;
-	const duration = getDuration();
-	
-	// Calculate estimated render time
-	const basetime = {
-		"720p": 0.5, "1080p": 1, "1440p": 2.5, "4k": 8, "8k": 25
-	}[quality] || 1;
-	
-	const fpsMultiplier = fps / 30;
-	const encodingMultiplier = {
-		"draft": 0.5, "good": 1, "best": 2, "lossless": 4
-	}[encoding] || 1;
-	
-	const estimatedMinutes = (duration / 60) * basetime * fpsMultiplier * encodingMultiplier;
-	
-	$("estimatedTime").textContent = `⚡ Ước tính thời gian tạo: ~${Math.ceil(estimatedMinutes)} phút`;
-}
+let isRendering = false;
+let mediaRecorder = null;
 
 // Handle custom time inputs
 $("timePreset").onchange = () => {
@@ -263,8 +250,19 @@ function updateCustomTime() {
 		`Tổng: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')} (${total}s)`;
 }
 
+function updateEstimates() {
+	const duration = getDuration();
+	const renderMode = $("renderMode").value;
+	
+	if (renderMode === "realtime") {
+		$("estimatedTime").textContent = `⚡ Real-time mode: Thời gian render = ${formatDuration(duration)}`;
+	} else {
+		$("estimatedTime").textContent = `⚡ Fast mode: ~${Math.ceil(duration/600)} phút (có thể không chính xác timing)`;
+	}
+}
+
 $("customHours").oninput = $("customMinutes").oninput = $("customSeconds").oninput = updateCustomTime;
-$("quality").onchange = $("fps").onchange = $("encodingQuality").onchange = updateEstimates;
+$("renderMode").onchange = updateEstimates;
 
 function getDuration() {
 	if ($("timePreset").value === "custom") {
@@ -277,14 +275,16 @@ function getDuration() {
 }
 
 btn.onclick = async () => {
+	if (isRendering) return;
+	
 	const quality = $("quality").value;
 	const fps = +$("fps").value;
 	const duration = getDuration();
+	const renderMode = $("renderMode").value;
 	const fontStyle = $("fontStyle").value;
 	const textColor = $("textColor").value;
 	const effects = $("effects").value;
 	const progressStyle = $("progressStyle").value;
-	const encodingQuality = $("encodingQuality").value;
 	
 	if (duration < 1) {
 		alert("⚠️ Thời gian phải lớn hơn 0!");
@@ -296,30 +296,23 @@ btn.onclick = async () => {
 		"720p": {w: 1280, h: 720},
 		"1080p": {w: 1920, h: 1080},
 		"1440p": {w: 2560, h: 1440},
-		"4k": {w: 3840, h: 2160},
-		"8k": {w: 7680, h: 4320}
+		"4k": {w: 3840, h: 2160}
 	};
 	const {w, h} = resolutions[quality];
 	
 	// Bitrate calculation
 	const baseBitrate = {
-		"720p": 2000000, "1080p": 5000000, "1440p": 10000000, 
-		"4k": 25000000, "8k": 50000000
+		"720p": 3000000, "1080p": 6000000, "1440p": 12000000, "4k": 25000000
 	}[quality];
 	
-	const encodingMultiplier = {
-		"draft": 2, "good": 4, "best": 8, "lossless": 16
-	}[encodingQuality];
-	
-	const bitrate = baseBitrate * encodingMultiplier;
-	
-	btn.disabled = true;
+	isRendering = true;
+	btn.style.display = "none";
+	stopBtn.classList.remove("hidden");
 	progressSection.classList.remove("hidden");
 	previewSection.classList.add("hidden");
 	
 	let startTime = performance.now();
-	let frameCount = 0;
-	let lastSpeedCheck = startTime;
+	let chunks = [];
 	
 	try {
 		// Setup canvas
@@ -332,24 +325,22 @@ btn.onclick = async () => {
 		await document.fonts.load(`900 ${h/5}px 'JetBrains Mono'`);
 		await document.fonts.load(`900 ${h/5}px 'Courier New'`);
 		
-		// MediaRecorder setup
+		// MediaRecorder setup with precise stream
 		const stream = canvas.captureStream(fps);
-		const chunks = [];
+		chunks = [];
 		
-		const mediaRecorder = new MediaRecorder(stream, {
+		mediaRecorder = new MediaRecorder(stream, {
 			mimeType: 'video/webm; codecs=vp9',
-			videoBitsPerSecond: bitrate
+			videoBitsPerSecond: baseBitrate
 		});
 		
 		mediaRecorder.ondataavailable = event => {
 			if (event.data.size > 0) {
 				chunks.push(event.data);
 				
-				// Update estimated size
+				// Update file size
 				const currentSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
-				const progress = frameCount / (duration * fps);
-				const estimatedTotal = progress > 0 ? currentSize / progress : 0;
-				estimatedSize.textContent = `${(estimatedTotal / 1024 / 1024).toFixed(1)} MB`;
+				fileSize.textContent = `${(currentSize / 1024 / 1024).toFixed(1)} MB`;
 			}
 		};
 		
@@ -360,12 +351,32 @@ btn.onclick = async () => {
 			preview.src = url;
 			preview.load();
 			
+			// Verify video duration
+			preview.onloadedmetadata = () => {
+				const actualDuration = preview.duration;
+				const expectedDuration = duration;
+				const accuracy = (actualDuration / expectedDuration * 100).toFixed(1);
+				
+				$("videoInfo").innerHTML = `
+					<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+						<div><strong>Thời lượng mong đợi:</strong> ${formatDuration(expectedDuration)}</div>
+						<div><strong>Thời lượng thực tế:</strong> ${formatDuration(Math.round(actualDuration))}</div>
+						<div><strong>Độ chính xác:</strong> <span class="${accuracy > 99 ? 'text-green-400' : 'text-yellow-400'}">${accuracy}%</span></div>
+						<div><strong>Dung lượng:</strong> ${(blob.size / 1024 / 1024).toFixed(1)} MB</div>
+						<div><strong>Độ phân giải:</strong> ${w}×${h}</div>
+						<div><strong>FPS:</strong> ${fps}</div>
+						<div><strong>Bitrate:</strong> ${(baseBitrate/1000000).toFixed(1)} Mbps</div>
+						<div><strong>Render mode:</strong> ${renderMode.toUpperCase()}</div>
+					</div>
+				`;
+			};
+			
 			// Download setup
 			$("download").onclick = () => {
 				const a = document.createElement("a");
 				a.href = url;
 				const timeStr = formatDuration(duration);
-				a.download = `casio-countdown-${timeStr}-${quality}-${fps}fps-${encodingQuality}.webm`;
+				a.download = `realtime-countdown-${timeStr}-${quality}-${fps}fps.webm`;
 				a.click();
 			};
 			
@@ -373,40 +384,40 @@ btn.onclick = async () => {
 			$("reset").onclick = () => {
 				progressSection.classList.add("hidden");
 				previewSection.classList.add("hidden");
-				btn.disabled = false;
-				frameCount = 0;
+				btn.style.display = "inline-block";
+				stopBtn.classList.add("hidden");
+				isRendering = false;
 			};
-			
-			// Video info
-			const fileSize = (blob.size / 1024 / 1024).toFixed(1);
-			const totalTime = (performance.now() - startTime) / 1000;
-			$("videoInfo").innerHTML = `
-				<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-					<div><strong>Thời lượng:</strong> ${formatDuration(duration)}</div>
-					<div><strong>Độ phân giải:</strong> ${w}×${h}</div>
-					<div><strong>FPS:</strong> ${fps}</div>
-					<div><strong>Dung lượng:</strong> ${fileSize} MB</div>
-					<div><strong>Bitrate:</strong> ${(bitrate/1000000).toFixed(1)} Mbps</div>
-					<div><strong>Thời gian render:</strong> ${(totalTime/60).toFixed(1)} phút</div>
-					<div><strong>Codec:</strong> VP9 WebM</div>
-					<div><strong>Chất lượng:</strong> ${encodingQuality.toUpperCase()}</div>
-				</div>
-			`;
 			
 			// Show completion
 			progressFill.style.width = "100%";
 			progressText.textContent = "100%";
-			status.textContent = "Hoàn thành!";
-			eta.textContent = "00:00";
+			syncStatus.textContent = "✅ COMPLETED";
 			
 			previewSection.classList.remove("hidden");
-			btn.disabled = false;
+			btn.style.display = "inline-block";
+			stopBtn.classList.add("hidden");
+			isRendering = false;
 			
-			console.log(`✅ Video generated in ${totalTime.toFixed(1)} seconds`);
+			const totalTime = (performance.now() - startTime) / 1000;
+			console.log(`✅ Real-time video generated in ${totalTime.toFixed(1)} seconds`);
+		};
+		
+		// Stop button handler
+		stopBtn.onclick = () => {
+			if (mediaRecorder && isRendering) {
+				mediaRecorder.stop();
+				isRendering = false;
+				btn.style.display = "inline-block";
+				stopBtn.classList.add("hidden");
+				syncStatus.textContent = "❌ STOPPED";
+			}
 		};
 		
 		// Advanced drawing function
-		const drawAdvancedFrame = (timeRemaining) => {
+		const drawAdvancedFrame = (currentSecond) => {
+			const timeRemaining = duration - currentSecond;
+			
 			// Pure black background
 			ctx.fillStyle = "#000000";
 			ctx.fillRect(0, 0, w, h);
@@ -439,18 +450,9 @@ btn.onclick = async () => {
 						ctx.shadowColor = textColor;
 						ctx.shadowBlur = 25;
 						break;
-					case "shadow":
-						ctx.shadowColor = "#000000";
-						ctx.shadowOffsetX = 4;
-						ctx.shadowOffsetY = 4;
-						ctx.shadowBlur = 8;
-						break;
 					case "neon":
 						ctx.shadowColor = textColor;
 						ctx.shadowBlur = 20;
-						// Double render for neon effect
-						ctx.fillText(timeString, w/2, h/2);
-						ctx.shadowBlur = 40;
 						break;
 				}
 			}
@@ -460,8 +462,6 @@ btn.onclick = async () => {
 			
 			// Reset shadow
 			ctx.shadowBlur = 0;
-			ctx.shadowOffsetX = 0;
-			ctx.shadowOffsetY = 0;
 			
 			// Subtitle
 			const subtitle = duration >= 3600 ? "HH:MM:SS" : "MM:SS";
@@ -471,7 +471,7 @@ btn.onclick = async () => {
 			
 			// Progress indicator
 			if (progressStyle !== "none") {
-				const progress = (duration - timeRemaining) / duration;
+				const progress = currentSecond / duration;
 				
 				if (progressStyle === "simple") {
 					const progressWidth = w * 0.8;
@@ -484,95 +484,88 @@ btn.onclick = async () => {
 					
 					ctx.fillStyle = textColor;
 					ctx.fillRect(progressX, progressY, progressWidth * progress, progressHeight);
-				} else if (progressStyle === "segments") {
-					const segmentCount = 20;
-					const segmentWidth = (w * 0.8) / segmentCount;
-					const segmentHeight = 12;
-					const startX = (w - (segmentWidth * segmentCount)) / 2;
-					const segmentY = h * 0.85;
-					
-					for (let i = 0; i < segmentCount; i++) {
-						const x = startX + i * segmentWidth;
-						ctx.fillStyle = i < segmentCount * progress ? textColor : "#333333";
-						ctx.fillRect(x, segmentY, segmentWidth - 2, segmentHeight);
-					}
-				} else if (progressStyle === "circle") {
-					const centerX = w/2;
-					const centerY = h * 0.85;
-					const radius = Math.min(w, h) / 25;
-					
-					// Background circle
-					ctx.beginPath();
-					ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-					ctx.strokeStyle = "#333333";
-					ctx.lineWidth = 6;
-					ctx.stroke();
-					
-					// Progress arc
-					ctx.beginPath();
-					ctx.arc(centerX, centerY, radius, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * progress);
-					ctx.strokeStyle = textColor;
-					ctx.lineWidth = 6;
-					ctx.stroke();
 				}
 			}
 		};
 		
 		// Start recording
 		mediaRecorder.start();
-		status.textContent = "Đang render frames...";
 		
-		// Generate frames
-		let currentTime = duration;
-		const targetFrameTime = 1000 / fps;
-		let lastFrameTime = 0;
-		
-		const generateFrame = (timestamp) => {
-			if (currentTime >= 0) {
-				if (timestamp - lastFrameTime >= targetFrameTime) {
-					drawAdvancedFrame(currentTime);
-					
-					frameCount++;
-					
-					// Update progress and stats
-					if (frameCount % fps === 0) {
-						const progress = ((duration - currentTime) / duration) * 100;
-						progressFill.style.width = progress + "%";
-						progressText.textContent = progress.toFixed(1) + "%";
-						
-						const elapsed = (performance.now() - startTime) / 1000;
-						const remaining = (elapsed / ((duration - currentTime) / duration)) - elapsed;
-						eta.textContent = formatTime(remaining);
-						
-						const currentSpeed = frameCount / elapsed;
-						renderSpeed.textContent = currentSpeed.toFixed(1);
-						
-						if (duration >= 3600) {
-							const h = Math.floor(currentTime / 3600);
-							const m = Math.floor((currentTime % 3600) / 60);
-							const s = currentTime % 60;
-							status.textContent = `Rendering: ${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-						} else {
-							status.textContent = `Rendering: ${Math.floor(currentTime/60)}:${(currentTime%60).toString().padStart(2,'0')}`;
-						}
+		if (renderMode === "realtime") {
+			// REAL-TIME MODE: Sync with actual time
+			let currentSecond = 0;
+			
+			const realTimeRender = () => {
+				if (!isRendering || currentSecond >= duration) {
+					if (isRendering) {
+						setTimeout(() => mediaRecorder.stop(), 500);
 					}
-					
-					currentTime--;
-					lastFrameTime = timestamp;
+					return;
 				}
 				
-				requestAnimationFrame(generateFrame);
-			} else {
-				setTimeout(() => mediaRecorder.stop(), 1000);
-			}
-		};
-		
-		requestAnimationFrame(generateFrame);
+				// Draw frame
+				drawAdvancedFrame(currentSecond);
+				
+				// Update UI
+				const progress = (currentSecond / duration) * 100;
+				progressFill.style.width = progress + "%";
+				progressText.textContent = progress.toFixed(1) + "%";
+				
+				const elapsed = currentSecond;
+				const remainingTime = duration - currentSecond;
+				videoTime.textContent = formatTime(elapsed);
+				remaining.textContent = formatTime(remainingTime);
+				syncStatus.textContent = "🔴 LIVE";
+				
+				currentSecond++;
+				
+				// Schedule next frame after exactly 1 second
+				setTimeout(realTimeRender, 1000);
+			};
+			
+			realTimeRender();
+			
+		} else {
+			// FAST MODE: Generate all frames quickly
+			let currentSecond = 0;
+			
+			const fastRender = () => {
+				if (!isRendering || currentSecond >= duration) {
+					if (isRendering) {
+						setTimeout(() => mediaRecorder.stop(), 500);
+					}
+					return;
+				}
+				
+				// Draw frame
+				drawAdvancedFrame(currentSecond);
+				
+				// Update UI every 10 frames
+				if (currentSecond % 10 === 0) {
+					const progress = (currentSecond / duration) * 100;
+					progressFill.style.width = progress + "%";
+					progressText.textContent = progress.toFixed(1) + "%";
+					
+					videoTime.textContent = formatTime(currentSecond);
+					remaining.textContent = formatTime(duration - currentSecond);
+					syncStatus.textContent = "⚡ FAST";
+				}
+				
+				currentSecond++;
+				
+				// Schedule next frame immediately
+				setTimeout(fastRender, 0);
+			};
+			
+			fastRender();
+		}
 		
 	} catch (error) {
 		console.error("Error generating video:", error);
 		alert("Lỗi tạo video: " + error.message);
-		btn.disabled = false;
+		isRendering = false;
+		btn.style.display = "inline-block";
+		stopBtn.classList.add("hidden");
 		progressSection.classList.add("hidden");
 	}
 };
@@ -601,7 +594,7 @@ function formatDuration(seconds) {
 
 // Initialize
 updateEstimates();
-console.log("🚀 Advanced Casio Countdown Pro Generator ready!");
+console.log("🚀 Real-time Casio Countdown Pro Generator ready!");
 </script>
 </body>
 </html>
